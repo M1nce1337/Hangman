@@ -33,7 +33,7 @@ public class Main {
     }
 
     public static void createDictionary() throws IOException {
-        File file = new File("C:\\Users\\Pc\\IdeaProjects\\Hangman\\src\\dictionary.txt");
+        File file = new File("dictionary.txt");
         Scanner scanner = new Scanner(file);
         while (scanner.hasNext()) {
             dictionary.add(scanner.next());
