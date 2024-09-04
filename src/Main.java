@@ -1,9 +1,6 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 import java.util.*;
 import java.io.*;
 import java.util.regex.Pattern;
-
 
 public class Main {
     private static String GAME_STATE_WON = "Вы выиграли!";
