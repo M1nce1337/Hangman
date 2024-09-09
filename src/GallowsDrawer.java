@@ -1,5 +1,5 @@
 public class GallowsDrawer {
-    private final String[] pictures = {"=====================|\n" +
+    private String[] pictures = {"=====================|\n" +
             "  ||                 |\n" +
             "  ||\n" +
             "  ||\n" +

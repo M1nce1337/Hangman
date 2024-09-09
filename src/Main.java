@@ -10,7 +10,7 @@ public class Main {
     private static final int MAX_NUMBER_OF_MISTAKES = 6;
     private static int mistakes = 0;
     private static String word;
-    private static Random randomGenerator = new Random();
+    private static Random Generator = new Random();
     private static ArrayList <String> dictionary = new ArrayList<>();
     private static String[] letters;
     private static String letter;
@@ -27,7 +27,7 @@ public class Main {
 
 
     public static void createDictionary() throws IOException {
-        FileReader fr = new FileReader("src/dictionary/words.txt");
+        FileReader fr = new FileReader("src/words.txt");
         Scanner scanner = new Scanner(fr);
         while (scanner.hasNext()) {
             dictionary.add(scanner.next());
@@ -105,7 +105,7 @@ public class Main {
     }
 
     public static void generateRandomWord() {
-        int index = randomGenerator.nextInt(dictionary.size());
+        int index = Generator.nextInt(dictionary.size());
         word = dictionary.get(index);
     }
 
