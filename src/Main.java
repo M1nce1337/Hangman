@@ -3,10 +3,12 @@ import java.io.*;
 import java.util.regex.Pattern;
 
 public class Main {
-    private static String GAME_STATE_WON = "Вы выиграли!";
-    private static String GAME_STATE_LOST = "Вы проиграли!";
+    private static final String GAME_STATE_WON = "Вы выиграли!";
+    private static final String GAME_STATE_LOST = "Вы проиграли!";
+    private static final String COMMAND_START = "Старт";
+    private static final String COMMAND_STOP = "Стоп";
     private static final int MAX_NUMBER_OF_MISTAKES = 6;
-    private static int mistakes;
+    private static int mistakes = 0;
     private static String word;
     private static Random randomGenerator = new Random();
     private static ArrayList <String> dictionary = new ArrayList<>();
@@ -24,25 +26,29 @@ public class Main {
     }
 
 
-    public static void createDictionary() throws IOException { // создание словаря
-        File file = new File("dictionary.txt");
-        Scanner scanner = new Scanner(file);
+    public static void createDictionary() throws IOException {
+        FileReader fr = new FileReader("src/dictionary/words.txt");
+        Scanner scanner = new Scanner(fr);
         while (scanner.hasNext()) {
             dictionary.add(scanner.next());
         }
         scanner.close();
     }
 
-    public static void startGameRound()  {
-        boolean gameRoundIsNotStarted = true;
+    public static void startGameRound() {
+        boolean isGameRoundNotStarted = true;
         Scanner scanner = new Scanner(System.in);
-        while (gameRoundIsNotStarted) {
-            System.out.println("Для начала игры введите 'Старт', для выхода - 'Стоп'");
+        while (isGameRoundNotStarted) {
+            System.out.printf("Для начала игры введите '%s', для выхода - '%s' \n", COMMAND_START, COMMAND_STOP);
             String input = scanner.next();
-            switch (input) {
-                case "Старт" -> gameRoundIsNotStarted = false;
-                case "Стоп" -> System.exit(0);
-                default -> System.out.println("Попробуйте снова");
+            if (input.equalsIgnoreCase(COMMAND_START)) {
+                isGameRoundNotStarted = false;
+            }
+            else if (input.equalsIgnoreCase(COMMAND_STOP)) {
+                System.exit(0);
+            }
+            else {
+                System.out.println("Попробуйте снова");
             }
         }
     }
@@ -51,39 +57,43 @@ public class Main {
         createDictionary();
         generateRandomWord();
         mask = getMaskedWord();
-        while (!GameIsEnded()) {
+        GallowsDrawer hangmanPrinter = new GallowsDrawer();
+        Scanner keyboard = new Scanner(System.in);
+        while (!isGameEnded()) {
+            System.out.println(hangmanPrinter.getPicture(mistakes));
             System.out.println(mask);
-            Scanner keyboard = new Scanner(System.in);
             System.out.println("Введите букву");
             letter = keyboard.nextLine();
-            if (!LetterisCorrect(letter)) {
+            if (!isLetterCorrect(letter)) {
                 System.out.println("Можно ввести только одну букву!");
                 continue;
             }
-            if (!LetterisRussian(letter)) {
+            if (!isLetterRussian(letter)) {
                 System.out.println("Можно ввести только русскую букву!");
                 continue;
             }
-            if (LetterisEnteredBefore(letter)) {
+            if (isLetterEnteredBefore(letter) || isLetterSame(letter)) {
                 System.out.println("Вы уже использовали эту букву!");
                 continue;
+            } else {
+                addUserLetters();
             }
-            if (!LetterisRight(letter)) {
+            if (!isLetterRight(letter)) {
                 addMistake();
             }
-
-            printGallows();
+            printUsedLetters();
+            System.out.println();
             printNumberOfMistakes();
 
             if (mistakesLimitReached()) {
                 System.out.println(GAME_STATE_LOST);
                 printWord();
             }
-            if (WordisUnlocked()) {
+            if (isWordUnlocked()) {
                 System.out.println(GAME_STATE_WON);
                 printWord();
             }
-            if (GameIsEnded()) {
+            if (isGameEnded()) {
                 for (int i = 0; i < usedLetters.size(); i++) {
                     usedLetters.remove(usedLetters.get(i));
                     i--;
@@ -91,72 +101,7 @@ public class Main {
                 mistakes = 0;
                 break;
             }
-
         }
-    }
-
-    public static void printGallows() {
-        String gallowsState;
-        switch (mistakes) {
-            case 1 -> gallowsState = "=====================|\n" +
-                    "  ||                 |\n" +
-                    "  ||                (ツ)\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "==========================";
-            case 2 -> gallowsState = "=====================|\n" +
-                    "  ||                 |\n" +
-                    "  ||                (ツ)\n" +
-                    "  ||                 |\n" +
-                    "  ||                 |\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "==========================";
-            case 3 -> gallowsState = "=====================|\n" +
-                    "  ||                 |\n" +
-                    "  ||                (ツ)\n" +
-                    "  ||                /|\n" +
-                    "  ||                 |\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "==========================";
-            case 4 -> gallowsState = "=====================|\n" +
-                    "  ||                 |\n" +
-                    "  ||                (ツ)\n" +
-                    "  ||                /|\\\n" +
-                    "  ||                 |\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "==========================";
-            case 5 -> gallowsState = "=====================|\n" +
-                    "  ||                 |\n" +
-                    "  ||                (ツ)\n" +
-                    "  ||                /|\\\n" +
-                    "  ||                 |\n" +
-                    "  ||                /\n" +
-                    "  ||\n" +
-                    "==========================";
-            case 6 -> gallowsState = "=====================|\n" +
-                    "  ||                 |\n" +
-                    "  ||                (ツ)\n" +
-                    "  ||                /|\\\n" +
-                    "  ||                 |\n" +
-                    "  ||                / \\\n" +
-                    "  ||\n" +
-                    "==========================";
-            default -> gallowsState = "=====================|\n" +
-                    "  ||                 |\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "  ||\n" +
-                    "==========================";
-        }
-        System.out.println(gallowsState);
-
     }
 
     public static void generateRandomWord() {
@@ -167,7 +112,6 @@ public class Main {
     public static void printWord() {
         System.out.println("Исходное слово: " + word);
     }
-
 
     public static void addMistake() {
         mistakes++;
@@ -190,15 +134,15 @@ public class Main {
         return maskedWord;
     }
 
-    public static boolean LetterisCorrect(String letter) {
+    public static boolean isLetterCorrect(String letter) {
         return letter.length() == 1;
     }
 
-    public static boolean LetterisRight(String letter) {
+    public static boolean isLetterRight(String letter) {
         boolean letterIsConsist = false;
         letters = word.split("");
         for (int i = 0; i < word.length(); i++) {
-            if (letters[i].equals(letter)) {
+            if (letters[i].equalsIgnoreCase(letter)) {
                 mask.setCharAt(i, letter.charAt(0));
                 letterIsConsist = true;
             }
@@ -206,7 +150,7 @@ public class Main {
         return letterIsConsist;
     }
 
-    public static boolean LetterisRussian(String letter) {
+    public static boolean isLetterRussian(String letter) {
         return Pattern.matches(".*\\p{InCyrillic}.*", letter);
     }
 
@@ -218,26 +162,38 @@ public class Main {
         System.out.println("Вы допустили " + mistakes + " ошибок");
     }
 
-    public static boolean WordisUnlocked() {
+    public static boolean isWordUnlocked() {
         String unlockedWord = new String(mask);
         return unlockedWord.equals(word);
     }
 
     public static void addUserLetters() {
         usedLetters.add(letter);
-
     }
 
-    public static boolean LetterisEnteredBefore(String letter) {
-        if (usedLetters.contains(letter)) {
-            return true;
+    public static boolean isLetterEnteredBefore(String letter) {
+        return usedLetters.contains(letter);
+    }
+
+    public static boolean isGameEnded() {
+        return (mistakesLimitReached() || isWordUnlocked());
+    }
+
+    public static void printUsedLetters() {
+        System.out.print("Использованные буквы: ");
+        for (int i = 0; i < usedLetters.size(); i++) {
+            System.out.print(usedLetters.get(i) + " ");
         }
-        addUserLetters();
-        return false;
     }
 
-    public static boolean GameIsEnded() {
-        return (mistakesLimitReached() || WordisUnlocked());
+    public static boolean isLetterSame(String letter) {
+        boolean isLetterNotDifferent = false;
+        for (int i = 0; i < usedLetters.size(); i++) {
+            if (usedLetters.get(i).equalsIgnoreCase(letter)) {
+                isLetterNotDifferent = true;
+            }
+        }
+        return isLetterNotDifferent;
     }
 }
 
